@@ -1,0 +1,27 @@
+.TH SERVERSPEC-RUNNER "1" "October 2014" "serverspec-runner" "User Commands"
+.SH NAME
+serverspec-runner \- simple execution framework for serverspec
+.SH SYNOPSIS
+.B serverspec-runner
+\fI\,(options)\/\fR
+.SH DESCRIPTION
+\fB\-s\fR, \fB\-\-scenario\fR     SCENARIO_FILE        path to scenario yml file
+.TP
+\fB\-r\fR, \fB\-\-specroot\fR     SPEC_ROOT            path to spec tests root dir
+.TP
+\fB\-o\fR, \fB\-\-ssh_options\fR  SSH_OPTIONS_FILE     path to ssh options yml file
+.TP
+\fB\-e\fR, \fB\-\-explain\fR      (short|long)         specify result explain length(default: short)
+.TP
+\fB\-t\fR, \fB\-\-tableformat\fR  (aa|mkd|csv|bool)    specify result table type(default: aa)
+.TP
+\fB\-T\fR, \fB\-\-tasks\fR                             display the tasks with descriptions(exec rake \fB\-T\fR)
+.TP
+\fB\-h\fR, \fB\-\-help\fR                              show help
+.TP
+.SH "AUTHOR"
+hiracy <leizhen at mbr.nifty.com>
+.PP
+This manual page was written by KURASHIKI Satoru <lurdan@gmail.com>,
+for the Debian project (but may be used by others).
+

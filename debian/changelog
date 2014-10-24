@@ -1,0 +1,5 @@
+serverspec-runner (0.2.4-1) unstable; urgency=medium
+
+  * Initial release (Closes: #766500)
+
+ -- KURASHIKI Satoru <lurdan@gmail.com>  Fri, 24 Oct 2014 00:30:58 +0900
