@@ -5,7 +5,7 @@ Maintainer: Debian Ruby Extras Maintainers <pkg-ruby-extras-maintainers@lists.al
 Uploaders: KURASHIKI Satoru <lurdan@gmail.com>
 Build-Depends: debhelper (>= 7.0.50~), gem2deb, ruby-rspec, rake
 Standards-Version: 3.9.6
-Vcs-Git: git@github.com:lurdan/serverspec-runner.git
+Vcs-Git: https://github.com/lurdan/serverspec-runner.git
 Vcs-Browser: https://github.com/lurdan/serverspec-runner
 Homepage: https://github.com/hiracy/serverspec-runner
 #Testsuite: autopkgtest
