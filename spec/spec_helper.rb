@@ -5,6 +5,11 @@ require 'yaml'
 require 'csv'
 require 'serverspec-runner/util/hash'
 
+# require extension libraries
+Dir.glob([
+  ENV['specroot'] + '/lib/extension/serverspec/**/*.rb',
+  ENV['specroot'] + '/lib/extension/specinfra/**/*.rb']).each {|f| require f}
+
 ssh_opts_default = YAML.load_file(ENV['ssh_options'])
 csv_path = ENV['result_csv']
 explains = []
@@ -35,7 +40,7 @@ RSpec.configure do |c|
     end
   end
   sliced = run_path.slice((speck_i + 1)..(run_path.size - 2))
-  role_name = sliced.join('-')
+  role_name = sliced.join('/')
 
   if ENV['ASK_SUDO_PASSWORD']
     require 'highline/import'
@@ -75,7 +80,7 @@ RSpec.configure do |c|
   c.after(:each) do
 
     if ENV['explain'] == 'long'
-      explains << spacer_char + example.metadata[:full_description] + (RSpec::Matchers.generated_description || '')
+      explains << spacer_char + example.metadata[:full_description]
       results << (self.example.exception ? 'NG' : 'OK')
       row_num << 1
     else
@@ -93,7 +98,7 @@ RSpec.configure do |c|
         end
       end
 
-      explains << spacer + spacer_char + RSpec::Matchers.generated_description
+      explains << spacer + spacer_char + (self.example.metadata[:description] || '')
       results << (self.example.exception ? 'NG' : 'OK')
       row_num << desc_hierarchy.length + 1
 

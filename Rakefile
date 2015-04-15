@@ -6,6 +6,7 @@ require 'fileutils'
 require 'net/ssh'
 require 'open-uri'
 require 'serverspec-runner'
+require 'serverspec-runner/util/hash'
 
 desc "Run serverspec to all scenario"
 task :spec => 'spec:all'
@@ -14,9 +15,17 @@ namespace :spec do
 
   ENV['EXEC_PATH'] = '/usr/local/bin:/usr/sbin:/sbin:/usr/bin:/bin'
 
-  ENV['specroot'] = ENV['specroot'] || "."
-  ENV['specpath'] = "#{ENV['specroot']}/spec"
+  if ENV['specroot'] == nil
+    if ENV['scenario'] != nil
+      ENV['specroot'] = "#{File.dirname(ENV['scenario'])}"
+    else
+      ENV['specroot'] = '.'
+    end
+  end
 
+  Dir.chdir(ENV['specroot']) if Dir.exists?(ENV['specroot'])
+
+  ENV['specpath'] = "#{ENV['specroot']}/spec"
   ENV['ssh_options'] = ENV['ssh_options'] || "#{ENV['specroot']}/ssh_options_default.yml" || "#{File.dirname(__FILE__)}/ssh_options_default.yml"
   ENV['ssh_options'] = "#{File.dirname(__FILE__)}/ssh_options_default.yml" unless File.exists?(ENV['ssh_options'])
   ssh_options = YAML.load_file(ENV['ssh_options'])
@@ -29,21 +38,24 @@ namespace :spec do
 
   def init_specpath(path)
 
+    abs_path = File::expand_path(path)
+
     begin
-      print "want to create spec-tree to #{ENV['specpath']}? (y/n): "
+      print "want to create spec-tree to #{abs_path}? (y/n): "
       ans = STDIN.gets.strip
       exit 0 unless (ans == 'y' || ans == 'yes')
     rescue Exception
       exit 0
     end
 
-    FileUtils.mkdir_p(path)
-    FileUtils.cp("#{File.dirname(__FILE__)}/scenario.yml", ENV['specroot'])
-    FileUtils.cp("#{File.dirname(__FILE__)}/ssh_options_default.yml", ENV['specroot'])
-    FileUtils.cp("#{File.dirname(__FILE__)}/.rspec", ENV['specroot'])
-    FileUtils.cp_r("#{File.dirname(__FILE__)}/spec/.", path)
+    FileUtils.mkdir_p("#{path}/lib")
+    FileUtils.cp("#{File.dirname(__FILE__)}/scenario.yml", path)
+    FileUtils.cp("#{File.dirname(__FILE__)}/ssh_options_default.yml", path)
+    FileUtils.cp("#{File.dirname(__FILE__)}/.rspec", path)
+    FileUtils.cp_r("#{File.dirname(__FILE__)}/spec", path)
+    FileUtils.cp_r("#{File.dirname(__FILE__)}/lib/extension", "#{path}/lib")
 
-    puts("Please edit \"#{ENV['specroot']}/scenario.yml\" and change directory to \"#{ENV['specroot']}\" and exec \"serverspec-runner\" command !!")
+    puts("Please edit \"#{abs_path}/scenario.yml\" and change directory to \"#{abs_path}\" and exec \"serverspec-runner\" command !!")
   end
 
   def gen_exec_plan(parent, node, path, ssh_options, tasks, platform)
@@ -101,11 +113,16 @@ namespace :spec do
         RSpec::Core::RakeTask.new("#{task_path}::#{host_alias}".to_sym) do |t|
 
           fpath = task_path.gsub(/::/, '/')
-          t.pattern = %W[
-            #{ENV['specpath']}/#{fpath}/{default.rb}
-            #{ENV['specpath']}/#{fpath}/{#{platform[host_alias.to_sym][:platform_name]}.rb}
-            #{ENV['specpath']}/#{fpath}/{#{platform[host_alias.to_sym][:platform_detail_name]}.rb}
-          ]
+
+          if Dir.exists?("#{ENV['specpath']}/#{fpath}")
+            t.pattern = %W[
+              #{ENV['specpath']}/#{fpath}/*.rb
+            ]
+          elsif File.file?("#{ENV['specpath']}/#{fpath}.rb")
+            t.pattern = %W[
+              #{ENV['specpath']}/#{fpath}.rb
+            ]
+          end
 
           raise "\e[31mspec file not found!![#{t.pattern.to_s}]\e[m" if Dir.glob(t.pattern).empty?
           t.fail_on_error = false
@@ -119,7 +136,7 @@ namespace :spec do
   end
 
   if !Dir.exists?(ENV['specpath'])
-    init_specpath(ENV['specpath'])
+    init_specpath(ENV['specroot'])
     exit 0
   end
 
@@ -150,10 +167,7 @@ namespace :spec do
         scenarios = data
       else
         data.each do |k, v|
-          platform[k.to_sym] = {}
-          v.each do |kk, vv|
-            platform[k.to_sym][kk.to_sym] = vv
-          end
+          platform[k.to_sym] = v.deep_symbolize_keys
         end
       end
     end
@@ -236,8 +250,30 @@ namespace :spec do
     end
   end
 
-  tasks << :stdout
-  task :all => tasks
+  exec_tasks = []
+  if ENV['parallels']
+    processes = ENV['parallels'].to_i
+
+    split_group = []
+    groups = 0
+    tasks.each_with_index do |t,pos|
+
+      split_group << t
+
+      if pos % processes == 0 || pos == tasks.length - 1
+        multitask "parallel_tasks_#{groups}".to_s => split_group
+        groups += 1
+        split_group = []
+      end
+    end
+
+    groups.times {|i| exec_tasks << "parallel_tasks_#{i}" }
+  else
+    exec_tasks = tasks
+  end
+
+  exec_tasks << :stdout
+  task :all => exec_tasks
 
   # tempファイルに書き出し
   open(ENV['platforms_tmp'] ,"w") do |y|

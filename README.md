@@ -1,4 +1,4 @@
-serverspec-runner
+serverspec-runner [![Gem Version](https://badge.fury.io/rb/serverspec-runner.svg)](http://badge.fury.io/rb/serverspec-runner)  [![BuildStatus](https://secure.travis-ci.org/hiracy/serverspec-runner.png)](http://travis-ci.org/hiracy/serverspec-runner)
 ======================
 
 Simple execution framework for [serverspec](http://serverspec.org/).
@@ -24,21 +24,22 @@ Edit your [spec-files](http://serverspec.org/resource_types.html).
 Edit your infrastructure or middleware tests scenario to "scenario.yml".
 
 ```
-test_top_dir:          # test directory top
-    :                  # test hierarchy directories
-  test_bottom_dir:     # test directory bottom
-    - servername       # ssh-accessible ip address or fqdn. or alias
+test_top_dir:                # test directory top
+    :                        # test hierarchy directories
+  test_bottom_dir:           # test directory bottom
+    - servername             # ssh-accessible ip address or fqdn. or alias
     - :
   - :
 :
 ---
-servername:            # alias name(not required)
-  host: 192.168.0.11   # ssh-accessible ip address or fqdn(required if alias exist)
-  ssh_opts:            # ssh options(not required)
-    port: 22           # ssh port option(not required)
-    user: "anyone"     # ssh user option(not required)
-      :                # any other Net::SSH Options(not required)
-  any_attribute: "aaa" # host attributes. left example available to get "property[:servername][:any_attribute]" from code(not required)
+servername:                  # alias name(not required)
+  host: 192.168.0.11         # ssh-accessible ip address or fqdn(required if alias exist)
+  ssh_opts:                  # ssh options(not required)
+    port: 22                 # ssh port option(not required)
+    user: "anyone"           # ssh user option(not required)
+    keys: ["~/.ssh/id_rsa"]  # ssh private keys option(not required)
+      :                      # any other Net::SSH Options(not required)
+  any_attribute: "aaa"       # host attributes. this example available to get "property[:any_attribute]" from your codes(not required)
   :
 :
 ```
@@ -58,6 +59,8 @@ You can also specify [ssh_options.yml](http://net-ssh.github.io/net-ssh/classes/
 For example. You write serverspec code like this.
 
 ```
+require 'spec_helper'
+
 describe "nginx" do
 
   describe "check running" do
@@ -76,6 +79,7 @@ end
 You can get the following outputs.
 
 * serverspec-runner -t aa  : asci-art table(default)
+
 ```
 +-------------------------------------------+
 |description                       | result |
@@ -100,6 +104,7 @@ You can get the following outputs.
 ```
 
 * serverspec-runner -t mkd : markdown table format
+
 ```
 |description                       | result |
 |:---------------------------------|:------:|
@@ -134,14 +139,20 @@ this example parsed for markdown to that(use -e long option)
 |  nginx File "/etc/logrotate.d/nginx" should be file             |   OK   |
 |  nginx File "/etc/logrotate.d/nginx" should contain "rotate 14" |   NG   |
 
-* serverspec-runner -t bool : only 'ok' or 'ng' result string.t
+* serverspec-runner -t bool : only 'ok' or 'ng' string
+
 You can use for cluster monitoring system health.
+
+```
+ok
+```
 
 ```
 ng
 ```
 
 * serverspec-runner -t csv : CSV file format
+
 You can get result CSV format output and can use redirect to file.
 
 ```
