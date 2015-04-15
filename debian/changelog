@@ -1,3 +1,12 @@
+serverspec-runner (0.2.4-2) unstable; urgency=high
+
+  * Patch to fix grave bug disturbing to use from scratch. (Closes: #769221)
+    - complete set of templates into /usr/share/serverspec-runner/.
+    - modify script to search above template instead of current path.
+    - fix template to cope with Debian.
+
+ -- KURASHIKI Satoru <lurdan@gmail.com>  Wed, 26 Nov 2014 12:32:06 +0900
+
 serverspec-runner (0.2.4-1) unstable; urgency=medium
 
   * Initial release (Closes: #766500)

@@ -1,0 +1,50 @@
+Index: serverspec-runner/Rakefile
+===================================================================
+--- serverspec-runner.orig/Rakefile
++++ serverspec-runner/Rakefile
+@@ -12,13 +12,15 @@ task :spec => 'spec:all'
+ 
+ namespace :spec do
+ 
++  ENV['TEMPLATE_PATH'] = ENV['TEMPLATE_PATH'] || '/usr/share/serverspec-runner'
++
+   ENV['EXEC_PATH'] = '/usr/local/bin:/usr/sbin:/sbin:/usr/bin:/bin'
+ 
+   ENV['specroot'] = ENV['specroot'] || "."
+   ENV['specpath'] = "#{ENV['specroot']}/spec"
+ 
+-  ENV['ssh_options'] = ENV['ssh_options'] || "#{ENV['specroot']}/ssh_options_default.yml" || "#{File.dirname(__FILE__)}/ssh_options_default.yml"
+-  ENV['ssh_options'] = "#{File.dirname(__FILE__)}/ssh_options_default.yml" unless File.exists?(ENV['ssh_options'])
++  ENV['ssh_options'] = ENV['ssh_options'] || "#{ENV['specroot']}/ssh_options_default.yml"
++  ENV['ssh_options'] = "#{ENV['TEMPLATE_PATH']}/ssh_options_default.yml" unless File.exists?(ENV['ssh_options'])
+   ssh_options = YAML.load_file(ENV['ssh_options'])
+   ENV['result_csv'] = ENV['result_csv'] || './_serverspec_result.csv'
+   csv_file = ENV['result_csv']
+@@ -38,10 +40,10 @@ namespace :spec do
+     end
+ 
+     FileUtils.mkdir_p(path)
+-    FileUtils.cp("#{File.dirname(__FILE__)}/scenario.yml", ENV['specroot'])
+-    FileUtils.cp("#{File.dirname(__FILE__)}/ssh_options_default.yml", ENV['specroot'])
+-    FileUtils.cp("#{File.dirname(__FILE__)}/.rspec", ENV['specroot'])
+-    FileUtils.cp_r("#{File.dirname(__FILE__)}/spec/.", path)
++    FileUtils.cp("#{ENV['TEMPLATE_PATH']}/scenario.yml", ENV['specroot'])
++    FileUtils.cp("#{ENV['TEMPLATE_PATH']}/ssh_options_default.yml", ENV['specroot'])
++    FileUtils.cp("#{ENV['TEMPLATE_PATH']}/.rspec", ENV['specroot'])
++    FileUtils.cp_r("#{ENV['TEMPLATE_PATH']}/spec/.", path)
+ 
+     puts("Please edit \"#{ENV['specroot']}/scenario.yml\" and change directory to \"#{ENV['specroot']}\" and exec \"serverspec-runner\" command !!")
+   end
+Index: serverspec-runner/bin/serverspec-runner
+===================================================================
+--- serverspec-runner.orig/bin/serverspec-runner
++++ serverspec-runner/bin/serverspec-runner
+@@ -53,7 +53,7 @@ opts.each do |opt, arg|
+ end
+ 
+ Rake::TaskManager.record_task_metadata = showtasks
+-load "#{File.dirname(__FILE__)}/../Rakefile"
++load "/usr/share/serverspec-runner/Rakefile"
+ 
+ if showtasks
+   mLen = (Rake.application.tasks.max_by { |t| t.name_with_args.size }).name_with_args.size
