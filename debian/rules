@@ -13,3 +13,8 @@
 
 %:
 	dh $@ --buildsystem=ruby --with ruby
+
+override_dh_auto_install:
+	mv lib/extension extension
+	dh_auto_install
+	mv extension lib/

@@ -3,4 +3,4 @@ spec usr/share/serverspec-runner
 Rakefile usr/share/serverspec-runner
 scenario.yml usr/share/serverspec-runner
 ssh_options_default.yml usr/share/serverspec-runner
-
+lib usr/share/serverspec-runner
