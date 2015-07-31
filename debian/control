@@ -3,19 +3,28 @@ Section: ruby
 Priority: optional
 Maintainer: Debian Ruby Extras Maintainers <pkg-ruby-extras-maintainers@lists.alioth.debian.org>
 Uploaders: KURASHIKI Satoru <lurdan@gmail.com>
-Build-Depends: debhelper (>= 7.0.50~), gem2deb, ruby-rspec, rake
+Build-Depends: debhelper (>= 7.0.50~)
+ , gem2deb
+ , rake
+ , ruby-net-ssh
+ , ruby-rspec
+ , ruby-serverspec
 Standards-Version: 3.9.6
 Vcs-Git: https://github.com/lurdan/serverspec-runner.git
 Vcs-Browser: https://github.com/lurdan/serverspec-runner
 Homepage: https://github.com/hiracy/serverspec-runner
-#Testsuite: autopkgtest
+Testsuite: autopkgtest-pkg-ruby
 XS-Ruby-Versions: all
 
 Package: serverspec-runner
 Architecture: all
 XB-Ruby-Versions: ${ruby:Versions}
 Depends: ${shlibs:Depends}, ${misc:Depends}, ruby | ruby-interpreter
- , ruby-serverspec, ruby-net-ssh, rake, ruby-rspec-core, bundler
+ , ruby-serverspec
+ , ruby-net-ssh
+# , rake
+# , ruby-rspec-core
+# , bundler
 Description: simple execution framework for serverspec
  This wrapper program makes it easy to run multiple serverspec
  recipes using one scinario yaml file, with pretty printng.

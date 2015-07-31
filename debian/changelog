@@ -1,3 +1,9 @@
+serverspec-runner (1.2.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- KURASHIKI Satoru <lurdan@gmail.com>  Fri, 31 Jul 2015 10:49:52 +0900
+
 serverspec-runner (0.2.4-2) unstable; urgency=high
 
   * Patch to fix grave bug disturbing to use from scratch. (Closes: #769221)
