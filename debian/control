@@ -1,9 +1,9 @@
 Source: serverspec-runner
-Section: ruby
+Section: utils
 Priority: optional
 Maintainer: Debian Ruby Extras Maintainers <pkg-ruby-extras-maintainers@lists.alioth.debian.org>
 Uploaders: KURASHIKI Satoru <lurdan@gmail.com>
-Build-Depends: debhelper (>= 7.0.50~)
+Build-Depends: debhelper (>= 9)
  , gem2deb
  , rake
  , ruby-net-ssh
