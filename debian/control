@@ -22,9 +22,6 @@ XB-Ruby-Versions: ${ruby:Versions}
 Depends: ${shlibs:Depends}, ${misc:Depends}, ruby | ruby-interpreter
  , ruby-serverspec
  , ruby-net-ssh
-# , rake
-# , ruby-rspec-core
-# , bundler
 Description: simple execution framework for serverspec
  This wrapper program makes it easy to run multiple serverspec
  recipes using one scinario yaml file, with pretty printng.
