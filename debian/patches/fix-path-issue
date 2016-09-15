@@ -1,3 +1,7 @@
+Description: Workaround for default files location to fit debian.
+Forwarded: not-needed
+Author: KURASHIKI Satoru <lurdan@gmail.com>
+
 Index: serverspec-runner/Rakefile
 ===================================================================
 --- serverspec-runner.orig/Rakefile
