@@ -9,7 +9,7 @@ Build-Depends: debhelper (>= 9)
  , ruby-net-ssh
  , ruby-rspec
  , ruby-serverspec
-Standards-Version: 3.9.8
+Standards-Version: 4.4.0
 Vcs-Git: https://github.com/lurdan/serverspec-runner.git
 Vcs-Browser: https://github.com/lurdan/serverspec-runner
 Homepage: https://github.com/hiracy/serverspec-runner
