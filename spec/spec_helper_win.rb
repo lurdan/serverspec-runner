@@ -5,6 +5,7 @@ require 'net/ssh/proxy/command'
 require 'yaml'
 require 'csv'
 require 'serverspec-runner/util/hash'
+require 'winrm'
 
 # require extension libraries
 Dir.glob([
@@ -52,7 +53,7 @@ RSpec.configure do |c|
 
   set_property (YAML.load_file(ENV['platforms_tmp']))[ENV['TARGET_HOST'].to_sym]
 
-  if ENV['TARGET_CONNECTION'] == 'ssh' || ENV['TARGET_SSH_HOST'] !~ /localhost|127\.0\.0\.1/
+  if ENV['TARGET_SSH_HOST'] !~ /localhost|127\.0\.0\.1/
     c.host = ENV['TARGET_SSH_HOST']
     options = Net::SSH::Config.for(c.host, files=["~/.ssh/config"])
     ssh_opts ||= ssh_opts_default
@@ -117,3 +118,15 @@ RSpec.configure do |c|
     end
   end
 end
+
+set :backend, :winrm
+
+opts = {
+  user: "Username", # ex.) Administrator
+  password: "Password", # connection password
+  endpoint: "http://IPaddress:5985/wsman", 
+  operation_timeout: 300,
+}
+
+winrm = WinRM::Connection.new(opts)
+Specinfra.configuration.winrm = winrm

@@ -7,6 +7,7 @@ require 'net/ssh'
 require 'open-uri'
 require 'serverspec-runner'
 require 'serverspec-runner/util/hash'
+require 'serverspec-runner/ansible/inventory'
 
 desc "Run serverspec to all scenario"
 task :spec => 'spec:all'
@@ -34,18 +35,21 @@ namespace :spec do
   CSV.open(csv_file, 'w') { |w| w << ['description', 'result'] }
   ENV['explain'] = ENV['explain'] || "short"
   ENV['tableformat'] = ENV['tableformat'] || "aa"
-  ENV['scenario'] = ENV['scenario'] || "./scenario.yml"
+  ENV['scenario'] = File.expand_path(ENV['scenario'] || "./scenario.yml")
+  ENV['inventory'] = File.expand_path(ENV['inventory']) if ENV['inventory']
 
-  def init_specpath(path)
+  def init_specpath(path, only_activate)
 
     abs_path = File::expand_path(path)
 
-    begin
-      print "want to create spec-tree to #{abs_path}? (y/n): "
-      ans = STDIN.gets.strip
-      exit 0 unless (ans == 'y' || ans == 'yes')
-    rescue Exception
-      exit 0
+    unless only_activate
+      begin
+        print "want to create spec-tree to #{abs_path}? (y/n): "
+        ans = STDIN.gets.strip
+        exit 0 unless (ans == 'y' || ans == 'yes')
+      rescue Exception
+        exit 0
+      end
     end
 
     FileUtils.mkdir_p("#{path}/lib")
@@ -91,6 +95,8 @@ namespace :spec do
   end
 
   def exec_tasks(parent, node, real_path, platform)
+    spec_file_pattern = ENV['pattern'] || "**/*.rb"
+    spec_file_exclude_pattern = ENV['exclude_pattern']
 
     if parent == nil
       abs_node = node
@@ -115,9 +121,11 @@ namespace :spec do
           fpath = task_path.gsub(/::/, '/')
 
           if Dir.exists?("#{ENV['specpath']}/#{fpath}")
-            t.pattern = %W[
-              #{ENV['specpath']}/#{fpath}/*.rb
-            ]
+            t.pattern = "#{ENV['specpath']}/#{fpath}/#{spec_file_pattern}"
+
+            if spec_file_exclude_pattern
+              t.exclude_pattern = "#{ENV['specpath']}/#{fpath}/#{spec_file_exclude_pattern}"
+            end
           elsif File.file?("#{ENV['specpath']}/#{fpath}.rb")
             t.pattern = %W[
               #{ENV['specpath']}/#{fpath}.rb
@@ -128,6 +136,9 @@ namespace :spec do
           t.fail_on_error = false
           ENV['TARGET_HOST'] = host_alias
           ENV['TARGET_SSH_HOST'] = platform[host_alias.to_sym][:host] || host_alias
+          if platform[host_alias.to_sym].key?(:ssh_opts) && platform[host_alias.to_sym][:ssh_opts].key?(:port)
+            ENV['TARGET_CONNECTION'] = 'ssh'
+          end
         end
       end
 
@@ -136,7 +147,10 @@ namespace :spec do
   end
 
   if !Dir.exists?(ENV['specpath'])
-    init_specpath(ENV['specroot'])
+    init_specpath(ENV['specroot'], false)
+    exit 0
+  elsif ENV['activate_specroot']
+    init_specpath(ENV['specroot'], true)
     exit 0
   end
 
@@ -161,21 +175,41 @@ namespace :spec do
     ENV['scenario'] = ENV['scenario_tmp']
   end
 
+  if !File.file?(ENV['scenario']) && !File.file?("#{ENV['specroot']}/scenario.yml")
+    print "\e[31m"
+    puts "scenario.yml is not found.(--help option can display manual))"
+    print "\e[m"
+    exit 1
+  end
+
   File.open(ENV['scenario'] || "#{ENV['specroot']}/scenario.yml") do |f|
-    YAML.load_documents(f).each_with_index do |data, idx|
+    YAML.load_stream(f).each_with_index do |data, idx|
       if idx == 0
         scenarios = data
       else
-        data.each do |k, v|
-          platform[k.to_sym] = v.deep_symbolize_keys
+        if data != nil
+          data.each do |k, v|
+            platform[k.to_sym] = v.deep_symbolize_keys
+          end
         end
       end
     end
   end
 
+  if ENV['inventory']
+    if !File.file?(ENV['inventory'])
+      print "\e[31m"
+      puts "inventory file is not found.(--help option can display manual))"
+      print "\e[m"
+      exit 1
+    end
+
+    platform = Inventory.inventory_to_platform(YAML.load_file(ENV['inventory']))
+  end
+
   if !scenarios
     print "\e[31m"
-    puts "scenario.yml is empty."
+    puts "scenario is empty."
     print "\e[m"
     exit 1
   end
@@ -184,8 +218,10 @@ namespace :spec do
   gen_exec_plan(nil, scenarios, [], ssh_options, tasks, platform)
 
   task :stdout do
+    ENV['is_example_error'] = 'true' if CSV.foreach(csv_file).any? { |c| c.size > 1 && c[1] == 'NG' }
 
-    if ENV['tableformat'] == 'bool'
+    if ENV['tableformat'] == 'none'
+    elsif ENV['tableformat'] == 'bool'
 
       ret = 'ok'
       CSV.foreach(csv_file) do |r|
@@ -250,6 +286,10 @@ namespace :spec do
     end
   end
 
+  task :exit do
+    exit(1) if !ENV['ignore_error_exit'] && ENV['is_example_error']
+  end
+
   exec_tasks = []
   if ENV['parallels']
     processes = ENV['parallels'].to_i
@@ -273,6 +313,7 @@ namespace :spec do
   end
 
   exec_tasks << :stdout
+  exec_tasks << :exit
   task :all => exec_tasks
 
   # tempファイルに書き出し

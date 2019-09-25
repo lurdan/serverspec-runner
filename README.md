@@ -1,7 +1,7 @@
 serverspec-runner [![Gem Version](https://badge.fury.io/rb/serverspec-runner.svg)](http://badge.fury.io/rb/serverspec-runner)  [![BuildStatus](https://secure.travis-ci.org/hiracy/serverspec-runner.png)](http://travis-ci.org/hiracy/serverspec-runner)
 ======================
 
-Simple execution framework for [serverspec](http://serverspec.org/).
+Simple execution framework for [serverspec](http://serverspec.org/) run.
 
 ----
 
@@ -21,7 +21,7 @@ Edit your [spec-files](http://serverspec.org/resource_types.html).
 
     $ vim  /path/to/your_serverspec_root/test_top_dir/.../your_serverspec_test.rb
 
-Edit your infrastructure or middleware tests scenario to "scenario.yml".
+Edit your infrastructure or middleware tests scenario to "[scenario.yml](scenario.yml)".
 
 ```
 test_top_dir:                # test directory top
