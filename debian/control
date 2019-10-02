@@ -3,18 +3,19 @@ Section: utils
 Priority: optional
 Maintainer: Debian Ruby Extras Maintainers <pkg-ruby-extras-maintainers@lists.alioth.debian.org>
 Uploaders: KURASHIKI Satoru <lurdan@gmail.com>
-Build-Depends: debhelper (>= 9)
+Build-Depends: debhelper-compat (= 12)
  , gem2deb
  , rake
  , ruby-net-ssh
  , ruby-rspec
  , ruby-serverspec
-Standards-Version: 4.4.0
+Standards-Version: 4.4.1
 Vcs-Git: https://github.com/lurdan/serverspec-runner.git
 Vcs-Browser: https://github.com/lurdan/serverspec-runner
 Homepage: https://github.com/hiracy/serverspec-runner
 Testsuite: autopkgtest-pkg-ruby
 XS-Ruby-Versions: all
+Rules-Requires-Root: no
 
 Package: serverspec-runner
 Architecture: all
@@ -27,4 +28,3 @@ Description: simple execution framework for serverspec
  recipes using one scinario yaml file, with pretty printng.
  In addition to that, it can export test results to other formats,
  like CSV, Markdown, etc.
-
